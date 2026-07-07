@@ -14,7 +14,7 @@
 // áp dụng thay đổi.
 
 const CONFIG = {
-  APPS_SCRIPT_URL: "PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE",
+  APPS_SCRIPT_URL: "AKfycbwRaamVIoDWHciE1AF_6StIPiFzZETDy1tsj3ZBws-C-_OA2WMNj9xLPv8sG3p8ms5S",
 
   SITE_TITLE: "夜読 Yodoku",
   SITE_TAGLINE: "Kệ truyện của riêng bạn — mỗi bộ một nhà, tất cả trong một kệ sách.",
