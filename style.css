@@ -1,0 +1,442 @@
+/* ============================================================
+   夜読 Yodoku — Night Bookshelf design system
+   Palette:
+     --ink        #14121A   background, deep indigo-black (not pure black)
+     --ink-soft   #1E1B27   card / panel background
+     --paper      #F3EFE6   cover mattes, light text on ink
+     --paper-dim  #C9C3B4   secondary text on ink
+     --hanko      #C1443B   stamp red — accent, sparingly
+     --gold       #D4AF6A   "new chapter" marker / hover glow
+   Type:
+     Display: "Big Shoulders Inline Text" / condensed poster feel
+     Body:    "Inter"
+     Mono/meta: "IBM Plex Mono" for chapter numbers, dates
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Big+Shoulders:wght@600;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap');
+
+:root {
+  --ink: #14121A;
+  --ink-soft: #1E1B27;
+  --ink-soft-2: #262233;
+  --paper: #F3EFE6;
+  --paper-dim: #C9C3B4;
+  --hanko: #C1443B;
+  --gold: #D4AF6A;
+  --line: rgba(243, 239, 230, 0.1);
+  --shadow: rgba(0, 0, 0, 0.45);
+
+  --font-display: "Big Shoulders", sans-serif;
+  --font-body: "Inter", sans-serif;
+  --font-mono: "IBM Plex Mono", monospace;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--ink);
+  background-image:
+    radial-gradient(ellipse 800px 400px at 15% -10%, rgba(193,68,59,0.08), transparent),
+    radial-gradient(ellipse 600px 500px at 100% 20%, rgba(212,175,106,0.05), transparent);
+  color: var(--paper);
+  font-family: var(--font-body);
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+a { color: inherit; text-decoration: none; }
+
+::selection { background: var(--hanko); color: var(--paper); }
+
+:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+}
+
+/* ---------- layout shell ---------- */
+
+.wrap {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 28px 80px;
+}
+
+header.top {
+  padding: 56px 28px 36px;
+  max-width: 1180px;
+  margin: 0 auto;
+  border-bottom: 1px solid var(--line);
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.eyebrow::before {
+  content: "";
+  width: 20px;
+  height: 1px;
+  background: var(--gold);
+  display: inline-block;
+}
+
+h1.site-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(2.6rem, 6vw, 4.4rem);
+  letter-spacing: 0.01em;
+  margin: 0 0 12px;
+  color: var(--paper);
+}
+
+.tagline {
+  color: var(--paper-dim);
+  font-size: 1.05rem;
+  max-width: 560px;
+  margin: 0 0 28px;
+}
+
+/* ---------- search ---------- */
+
+.search-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.search-box {
+  position: relative;
+  flex: 1 1 340px;
+  max-width: 480px;
+}
+
+.search-box input {
+  width: 100%;
+  background: var(--ink-soft);
+  border: 1px solid var(--line);
+  color: var(--paper);
+  font-family: var(--font-body);
+  font-size: 15px;
+  padding: 13px 16px 13px 42px;
+  border-radius: 8px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.search-box input::placeholder { color: var(--paper-dim); }
+
+.search-box input:focus {
+  border-color: var(--hanko);
+  box-shadow: 0 0 0 3px rgba(193,68,59,0.15);
+  outline: none;
+}
+
+.search-box svg {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  stroke: var(--paper-dim);
+  pointer-events: none;
+}
+
+.genre-pills {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pill {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--paper-dim);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.pill:hover { border-color: var(--gold); color: var(--paper); }
+
+.pill.active {
+  background: var(--hanko);
+  border-color: var(--hanko);
+  color: var(--paper);
+}
+
+.count-meta {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--paper-dim);
+  margin-top: 18px;
+}
+
+/* ---------- shelf grid (home) ---------- */
+
+.shelf {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 32px 24px;
+  margin-top: 44px;
+}
+
+.book {
+  position: relative;
+  cursor: pointer;
+  perspective: 800px;
+}
+
+.book-cover {
+  position: relative;
+  aspect-ratio: 2 / 3;
+  border-radius: 4px 8px 8px 4px;
+  overflow: hidden;
+  background: var(--ink-soft-2);
+  box-shadow:
+    -6px 0 0 rgba(0,0,0,0.25),
+    0 14px 30px var(--shadow);
+  transform-origin: left center;
+  transition: transform 0.25s cubic-bezier(.2,.7,.3,1), box-shadow 0.25s;
+}
+
+.book-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.book-cover::after {
+  /* spine highlight */
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 6px;
+  background: linear-gradient(to right, rgba(0,0,0,0.5), transparent);
+}
+
+.book:hover .book-cover {
+  transform: translateY(-8px) rotateY(-6deg);
+  box-shadow:
+    -6px 0 0 rgba(0,0,0,0.25),
+    -12px 20px 34px var(--shadow);
+}
+
+.book-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: var(--hanko);
+  color: var(--paper);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.03em;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.35);
+}
+
+.book-title {
+  margin-top: 14px;
+  font-weight: 600;
+  font-size: 14.5px;
+  color: var(--paper);
+  line-height: 1.35;
+}
+
+.book-meta {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--paper-dim);
+  margin-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 70px 20px;
+  color: var(--paper-dim);
+  font-family: var(--font-mono);
+  font-size: 14px;
+}
+
+/* ---------- series detail page ---------- */
+
+.series-hero {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 40px;
+  padding: 48px 28px;
+  max-width: 1180px;
+  margin: 0 auto;
+  border-bottom: 1px solid var(--line);
+}
+
+.series-hero .book-cover {
+  aspect-ratio: 2/3;
+  box-shadow: -8px 0 0 rgba(0,0,0,0.25), 0 20px 40px var(--shadow);
+}
+
+.back-link {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--gold);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+.back-link:hover { text-decoration: underline; }
+
+.series-info h1 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(2rem, 4vw, 3rem);
+  margin: 0 0 8px;
+}
+
+.series-tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--paper-dim);
+}
+
+.tag.status-ongoing { border-color: var(--gold); color: var(--gold); }
+.tag.status-completed { border-color: var(--hanko); color: var(--hanko); }
+
+.series-desc {
+  color: var(--paper-dim);
+  max-width: 640px;
+  font-size: 15px;
+}
+
+.origin-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--paper);
+  border: 1px solid var(--gold);
+  padding: 9px 16px;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+.origin-link:hover { background: rgba(212,175,106,0.12); }
+
+/* ---------- chapter rows: 5 per row ---------- */
+
+.chapters-section { padding-top: 40px; }
+
+.chapters-section h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.4rem;
+  letter-spacing: 0.02em;
+  margin-bottom: 22px;
+  color: var(--paper);
+}
+
+.chapter-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+}
+
+@media (max-width: 980px) {
+  .chapter-grid { grid-template-columns: repeat(3, 1fr); }
+  .series-hero { grid-template-columns: 160px 1fr; }
+}
+
+@media (max-width: 620px) {
+  .chapter-grid { grid-template-columns: repeat(2, 1fr); }
+  .series-hero { grid-template-columns: 1fr; }
+  .series-hero .book-cover { max-width: 160px; }
+}
+
+.chapter-card {
+  background: var(--ink-soft);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 16px 14px;
+  transition: border-color 0.15s, transform 0.15s;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.chapter-card:hover {
+  border-color: var(--hanko);
+  transform: translateY(-3px);
+}
+
+.chapter-num {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--gold);
+  letter-spacing: 0.05em;
+}
+
+.chapter-title {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--paper);
+  line-height: 1.3;
+}
+
+.chapter-date {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--paper-dim);
+  margin-top: auto;
+}
+
+/* ---------- loading / error ---------- */
+
+.status-msg {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--paper-dim);
+  padding: 40px 0;
+  text-align: center;
+}
+
+.status-msg.error { color: var(--hanko); }
+
+footer.site-footer {
+  text-align: center;
+  padding: 40px 20px 20px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--paper-dim);
+  opacity: 0.7;
+}
