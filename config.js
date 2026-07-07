@@ -14,7 +14,7 @@
 // áp dụng thay đổi.
 
 const CONFIG = {
-  APPS_SCRIPT_URL: "AKfycbwRaamVIoDWHciE1AF_6StIPiFzZETDy1tsj3ZBws-C-_OA2WMNj9xLPv8sG3p8ms5S",
+  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbwRaamVIoDWHciE1AF_6StIPiFzZETDy1tsj3ZBws-C-_OA2WMNj9xLPv8sG3p8ms5S/exec",
 
   SITE_TITLE: "夜読 Yodoku",
   SITE_TAGLINE: "Kệ truyện của riêng bạn — mỗi bộ một nhà, tất cả trong một kệ sách.",
