@@ -1,27 +1,24 @@
 // ============================================================
-// CẤU HÌNH GOOGLE SHEET — điền link CSV của bạn vào đây
+// CẤU HÌNH — dán link Web App của Apps Script vào đây
 // ============================================================
 //
 // Cách lấy link:
-// 1. Mở Google Sheet của bạn.
-// 2. Đảm bảo có 2 tab (sheet con) tên là "Series" và "Chapters"
-//    (xem cấu trúc cột mẫu trong README.md).
-// 3. Vào File > Share > Publish to web.
-// 4. Ở mục "Link", chọn từng sheet con (Series, rồi Chapters),
-//    chọn định dạng "Comma-separated values (.csv)", bấm Publish.
-// 5. Copy link được tạo ra và dán vào bên dưới.
+// 1. Mở Google Sheet > Tiện ích (Extensions) > Apps Script.
+// 2. Dán nội dung file Code.gs vào, Save.
+// 3. Deploy > New deployment > Web app.
+//      Execute as: Me | Who has access: Anyone
+// 4. Copy link "Web app URL" (dạng .../exec) và dán vào bên dưới.
 //
-// Link sẽ có dạng:
-// https://docs.google.com/spreadsheets/d/e/2PACX-xxxxxxx/pub?gid=0&single=true&output=csv
+// Mỗi khi bạn sửa Code.gs, phải Deploy > Manage deployments >
+// bấm sửa (bút chì) > Version: New version > Deploy lại thì mới
+// áp dụng thay đổi.
 
 const CONFIG = {
-  SERIES_CSV_URL: "1EnWpN30yR_9RBV4kWTQrxFhLt_6CPnYXnLVJXR30k6Y",
-  CHAPTERS_CSV_URL: "1EnWpN30yR_9RBV4kWTQrxFhLt_6CPnYXnLVJXR30k6Y",
+  APPS_SCRIPT_URL: "PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE",
 
-  // Tên site hiển thị trên trang
   SITE_TITLE: "夜読 Yodoku",
   SITE_TAGLINE: "Kệ truyện của riêng bạn — mỗi bộ một nhà, tất cả trong một kệ sách.",
 
-  // Số chương hiển thị mỗi hàng ở trang chi tiết bộ truyện
-  CHAPTERS_PER_ROW: 5,
+  // Số tập hiển thị mỗi hàng ở trang chi tiết bộ truyện
+  VOLUMES_PER_ROW: 5,
 };

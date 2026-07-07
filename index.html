@@ -11,7 +11,7 @@
 <header class="top">
   <div class="eyebrow">MANGA SHELF TRACKER</div>
   <h1 class="site-title" id="siteTitle">夜読 Yodoku</h1>
-  <p class="tagline" id="siteTagline">Kệ truyện của riêng bạn — mỗi bộ một nhà, tất cả trong một kệ sách.</p>
+  <p class="tagline" id="siteTagline">Kệ truyện của riêng bạn.</p>
 
   <div class="search-row">
     <div class="search-box">
@@ -32,7 +32,7 @@
   </div>
 </main>
 
-<footer class="site-footer">Dữ liệu đồng bộ trực tiếp từ Google Sheet · Cập nhật sheet, trang tự làm mới</footer>
+<footer class="site-footer">Dữ liệu đồng bộ trực tiếp từ Google Sheet qua Apps Script</footer>
 
 <script src="config.js"></script>
 <script src="data.js"></script>
@@ -44,20 +44,37 @@
   document.getElementById("siteTitle").textContent = CONFIG.SITE_TITLE;
   document.getElementById("siteTagline").textContent = CONFIG.SITE_TAGLINE;
 
+  function escapeHtml(str) {
+    const div = document.createElement("div");
+    div.textContent = str || "";
+    return div.innerHTML;
+  }
+
+  function statusLabel(status) {
+    const s = (status || "").toLowerCase();
+    if (s.includes("on-going") || s.includes("ongoing") || s.includes("đang")) return "Đang ra";
+    if (s.includes("end") || s.includes("hoàn")) return "Hoàn thành";
+    return status || "";
+  }
+
+  function statusClass(status) {
+    const s = (status || "").toLowerCase();
+    if (s.includes("on-going") || s.includes("ongoing") || s.includes("đang")) return "status-ongoing";
+    if (s.includes("end") || s.includes("hoàn")) return "status-completed";
+    return "";
+  }
+
   function render() {
     const shelf = document.getElementById("shelf");
     let list = ALL_SERIES;
 
-    if (activeGenre) {
-      list = list.filter(s => s.genre.includes(activeGenre));
-    }
+    if (activeGenre) list = list.filter(s => s.genre.includes(activeGenre));
     if (searchTerm.trim()) {
       const q = searchTerm.trim().toLowerCase();
       list = list.filter(s => s.title.toLowerCase().includes(q));
     }
 
-    document.getElementById("countMeta").textContent =
-      `${list.length} / ${ALL_SERIES.length} bộ truyện`;
+    document.getElementById("countMeta").textContent = `${list.length} / ${ALL_SERIES.length} bộ truyện`;
 
     if (list.length === 0) {
       shelf.innerHTML = `<div class="empty-state">Không tìm thấy bộ truyện nào khớp với tìm kiếm của bạn.</div>`;
@@ -69,18 +86,12 @@
         <div class="book-cover">
           <img src="${s.cover}" alt="Bìa truyện ${escapeHtml(s.title)}" loading="lazy"
                onerror="this.src='https://placehold.co/400x600/1E1B27/C9C3B4?text=No+Cover'">
-          ${s.status ? `<div class="book-badge">${s.status === "ongoing" ? "Đang ra" : s.status === "completed" ? "Hoàn thành" : escapeHtml(s.status)}</div>` : ""}
+          ${s.status ? `<div class="book-badge">${escapeHtml(statusLabel(s.status))}</div>` : ""}
         </div>
         <div class="book-title">${escapeHtml(s.title)}</div>
-        <div class="book-meta">${s.genre.slice(0, 2).join(" · ")}</div>
+        <div class="book-meta">${s.genre.slice(0, 2).join(" · ")}${s.volumeCount ? ` · ${s.volumeCount} tập` : ""}</div>
       </a>
     `).join("");
-  }
-
-  function escapeHtml(str) {
-    const div = document.createElement("div");
-    div.textContent = str;
-    return div.innerHTML;
   }
 
   function renderPills() {
@@ -110,18 +121,18 @@
   async function init() {
     const shelf = document.getElementById("shelf");
     try {
-      ALL_SERIES = await loadSeries();
+      ALL_SERIES = await loadSeriesList();
       if (ALL_SERIES.length === 0) {
-        shelf.innerHTML = `<div class="status-msg">Chưa có bộ truyện nào trong Google Sheet. Thêm dữ liệu và tải lại trang.</div>`;
+        shelf.innerHTML = `<div class="status-msg">Chưa có bộ truyện nào. Thêm tab mới trong Google Sheet và tải lại trang.</div>`;
         return;
       }
       renderPills();
       render();
     } catch (err) {
       if (err.message === "MISSING_CONFIG") {
-        shelf.innerHTML = `<div class="status-msg error">Chưa cấu hình Google Sheet. Mở <code>config.js</code> và dán link CSV của bạn vào SERIES_CSV_URL.</div>`;
+        shelf.innerHTML = `<div class="status-msg error">Chưa cấu hình Apps Script. Mở <code>config.js</code> và dán link Web App vào APPS_SCRIPT_URL.</div>`;
       } else {
-        shelf.innerHTML = `<div class="status-msg error">Không lấy được dữ liệu từ Google Sheet. Kiểm tra lại link CSV trong config.js và đảm bảo sheet đã được Publish to web.</div>`;
+        shelf.innerHTML = `<div class="status-msg error">Không lấy được dữ liệu. Kiểm tra lại link trong config.js và đảm bảo Apps Script đã Deploy với quyền "Anyone".</div>`;
       }
       console.error(err);
     }

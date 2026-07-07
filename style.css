@@ -366,10 +366,11 @@ h1.site-title {
   color: var(--paper);
 }
 
+/* 5 tập mỗi hàng, ảnh bìa lớn làm trọng tâm */
 .chapter-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 14px;
+  gap: 22px 18px;
 }
 
 @media (max-width: 980px) {
@@ -383,41 +384,83 @@ h1.site-title {
   .series-hero .book-cover { max-width: 160px; }
 }
 
-.chapter-card {
-  background: var(--ink-soft);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 16px 14px;
-  transition: border-color 0.15s, transform 0.15s;
+.vol-card {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 10px;
 }
 
-.chapter-card:hover {
-  border-color: var(--hanko);
-  transform: translateY(-3px);
+.vol-cover {
+  position: relative;
+  aspect-ratio: 2 / 3;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--ink-soft-2);
+  box-shadow: 0 14px 28px var(--shadow);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.chapter-num {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--gold);
-  letter-spacing: 0.05em;
+.vol-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
-.chapter-title {
-  font-size: 13.5px;
-  font-weight: 500;
-  color: var(--paper);
-  line-height: 1.3;
+.vol-card:hover .vol-cover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 36px var(--shadow);
 }
 
-.chapter-date {
+.vol-badge {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  right: 8px;
   font-family: var(--font-mono);
   font-size: 10.5px;
+  text-align: center;
+  padding: 5px 6px;
+  border-radius: 4px;
+  background: rgba(20, 18, 26, 0.85);
+  backdrop-filter: blur(2px);
   color: var(--paper-dim);
-  margin-top: auto;
+  letter-spacing: 0.02em;
+}
+
+.vol-badge.vol-released { color: var(--gold); border: 1px solid rgba(212,175,106,0.4); }
+.vol-badge.vol-pending { color: var(--paper-dim); border: 1px solid var(--line); }
+
+.vol-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 0 2px;
+}
+
+.vol-number {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--paper);
+}
+
+.vol-price {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+}
+
+.price-old {
+  color: var(--paper-dim);
+  text-decoration: line-through;
+}
+
+.price-sale {
+  color: var(--hanko);
+  font-weight: 600;
 }
 
 /* ---------- loading / error ---------- */

@@ -1,87 +1,50 @@
 // ============================================================
-// data.js — fetch & parse Google Sheet CSV data
+// data.js — gọi Apps Script Web App để lấy dữ liệu
 // ============================================================
 
-/**
- * Fetch a CSV URL and parse it into an array of row objects,
- * keyed by the header row.
- */
-async function fetchSheet(url) {
-  if (!url || url.startsWith("PASTE_YOUR")) {
+async function callApi(params) {
+  if (!CONFIG.APPS_SCRIPT_URL || CONFIG.APPS_SCRIPT_URL.startsWith("PASTE_YOUR")) {
     throw new Error("MISSING_CONFIG");
   }
-  const res = await fetch(url, { cache: "no-store" });
+  const url = new URL(CONFIG.APPS_SCRIPT_URL);
+  Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+
+  const res = await fetch(url.toString(), { cache: "no-store" });
   if (!res.ok) throw new Error("FETCH_FAILED");
-  const text = await res.text();
-  return parseCSV(text);
+  const json = await res.json();
+  if (json && json.error) throw new Error("API_ERROR: " + json.error);
+  return json;
 }
 
-/**
- * Minimal, dependency-free CSV parser that handles quoted fields,
- * commas inside quotes, and escaped quotes ("").
- */
-function parseCSV(text) {
-  const rows = [];
-  let row = [];
-  let field = "";
-  let inQuotes = false;
-
-  for (let i = 0; i < text.length; i++) {
-    const char = text[i];
-    const next = text[i + 1];
-
-    if (inQuotes) {
-      if (char === '"' && next === '"') { field += '"'; i++; }
-      else if (char === '"') { inQuotes = false; }
-      else { field += char; }
-    } else {
-      if (char === '"') inQuotes = true;
-      else if (char === ',') { row.push(field); field = ""; }
-      else if (char === '\r') { /* skip */ }
-      else if (char === '\n') { row.push(field); rows.push(row); row = []; field = ""; }
-      else field += char;
-    }
-  }
-  if (field.length || row.length) { row.push(field); rows.push(row); }
-
-  const filtered = rows.filter(r => r.some(cell => cell.trim() !== ""));
-  if (filtered.length === 0) return [];
-
-  const headers = filtered[0].map(h => h.trim().toLowerCase());
-  return filtered.slice(1).map(r => {
-    const obj = {};
-    headers.forEach((h, idx) => { obj[h] = (r[idx] ?? "").trim(); });
-    return obj;
-  });
+/** Lấy danh sách tất cả bộ truyện (mỗi tab sheet = 1 bộ truyện). */
+async function loadSeriesList() {
+  const rows = await callApi({ action: "series" });
+  return rows.map(r => ({
+    id: r.id,
+    title: r.title,
+    cover: r.cover || "",
+    link: r.link || "",
+    genre: (r.genre || "").split(/[,|]/).map(g => g.trim()).filter(Boolean),
+    status: r.status || "",
+    volumeCount: r.volumeCount || 0,
+  }));
 }
 
-/** Fetch and normalize the Series sheet. */
-async function loadSeries() {
-  const rows = await fetchSheet(CONFIG.SERIES_CSV_URL);
-  return rows
-    .filter(r => r.id && r.title)
-    .map(r => ({
-      id: r.id,
-      title: r.title,
-      cover: r.cover || "",
-      url: r.url || "",
-      genre: (r.genre || "").split(/[,|]/).map(g => g.trim()).filter(Boolean),
-      status: (r.status || "").toLowerCase(),
-      description: r.description || "",
-    }));
-}
-
-/** Fetch and normalize the Chapters sheet. */
-async function loadChapters() {
-  const rows = await fetchSheet(CONFIG.CHAPTERS_CSV_URL);
-  return rows
-    .filter(r => r.series_id && r.number)
-    .map(r => ({
-      seriesId: r.series_id,
-      number: r.number,
-      title: r.title || "",
-      url: r.url || "",
-      date: r.date || "",
-    }))
-    .sort((a, b) => parseFloat(b.number) - parseFloat(a.number));
+/** Lấy chi tiết 1 bộ truyện (metadata + danh sách tập) theo tên tab. */
+async function loadSeriesDetail(seriesId) {
+  const r = await callApi({ action: "detail", name: seriesId });
+  return {
+    id: r.id,
+    title: r.title,
+    genre: (r.genre || "").split(/[,|]/).map(g => g.trim()).filter(Boolean),
+    status: r.status || "",
+    link: r.link || "",
+    volumes: (r.volumes || []).map(v => ({
+      number: v["Tập"] || "",
+      status: v["Trạng thái"] || "",
+      priceCover: v["Giá bìa"] || "",
+      priceSale: v["Giá sẵn"] || "",
+      cover: v["Ảnh bìa"] || "",
+    })),
+  };
 }

@@ -16,7 +16,7 @@
   <div class="status-msg">Đang tải dữ liệu bộ truyện...</div>
 </div>
 
-<footer class="site-footer">Dữ liệu đồng bộ trực tiếp từ Google Sheet</footer>
+<footer class="site-footer">Dữ liệu đồng bộ trực tiếp từ Google Sheet qua Apps Script</footer>
 
 <script src="config.js"></script>
 <script src="data.js"></script>
@@ -28,27 +28,62 @@
   }
 
   function getSeriesId() {
-    const params = new URLSearchParams(window.location.search);
-    return params.get("id");
+    return new URLSearchParams(window.location.search).get("id");
   }
 
   function statusLabel(status) {
-    if (status === "ongoing") return "Đang ra";
-    if (status === "completed") return "Hoàn thành";
-    return status ? escapeHtml(status) : "";
+    const s = (status || "").toLowerCase();
+    if (s.includes("on-going") || s.includes("ongoing") || s.includes("đang")) return "Đang ra";
+    if (s.includes("end") || s.includes("hoàn")) return "Hoàn thành";
+    return status || "";
   }
 
-  function chapterGridHtml(chapters) {
-    if (chapters.length === 0) {
-      return `<div class="empty-state">Chưa có chương nào được thêm cho bộ truyện này.</div>`;
+  function statusClass(status) {
+    const s = (status || "").toLowerCase();
+    if (s.includes("on-going") || s.includes("ongoing") || s.includes("đang")) return "status-ongoing";
+    if (s.includes("end") || s.includes("hoàn")) return "status-completed";
+    return "";
+  }
+
+  function volStatusClass(status) {
+    const s = (status || "").toLowerCase();
+    if (s.includes("chưa")) return "vol-pending";
+    if (s.includes("đã") || s.includes("phát hành") || s.includes("bán")) return "vol-released";
+    return "";
+  }
+
+  function formatPrice(v) {
+    if (!v) return "";
+    // Đã format sẵn từ sheet (getDisplayValues), giữ nguyên text hiển thị
+    return v;
+  }
+
+  function volumeCardHtml(v) {
+    const showSale = v.priceSale && v.priceSale !== v.priceCover;
+    return `
+      <div class="vol-card">
+        <div class="vol-cover">
+          <img src="${v.cover}" alt="Bìa ${escapeHtml(v.number)}" loading="lazy"
+               onerror="this.src='https://placehold.co/400x600/1E1B27/C9C3B4?text=No+Cover'">
+          ${v.status ? `<span class="vol-badge ${volStatusClass(v.status)}">${escapeHtml(v.status)}</span>` : ""}
+        </div>
+        <div class="vol-info">
+          <span class="vol-number">${escapeHtml(v.number)}</span>
+          ${(v.priceCover || v.priceSale) ? `
+            <span class="vol-price">
+              ${showSale ? `<span class="price-old">${escapeHtml(v.priceCover)}</span><span class="price-sale">${escapeHtml(v.priceSale)}</span>`
+                         : `<span class="price-sale">${escapeHtml(v.priceCover || v.priceSale)}</span>`}
+            </span>` : ""}
+        </div>
+      </div>
+    `;
+  }
+
+  function volumeGridHtml(volumes) {
+    if (volumes.length === 0) {
+      return `<div class="empty-state">Chưa có tập nào được thêm cho bộ truyện này.</div>`;
     }
-    return `<div class="chapter-grid">` + chapters.map(c => `
-      <a class="chapter-card" href="${c.url || '#'}" target="_blank" rel="noopener noreferrer">
-        <span class="chapter-num">CHAP ${escapeHtml(c.number)}</span>
-        <span class="chapter-title">${escapeHtml(c.title || ('Chương ' + c.number))}</span>
-        ${c.date ? `<span class="chapter-date">${escapeHtml(c.date)}</span>` : ""}
-      </a>
-    `).join("") + `</div>`;
+    return `<div class="chapter-grid">` + volumes.map(volumeCardHtml).join("") + `</div>`;
   }
 
   async function init() {
@@ -61,43 +96,42 @@
     }
 
     try {
-      const [allSeries, allChapters] = await Promise.all([loadSeries(), loadChapters()]);
-      const series = allSeries.find(s => s.id === seriesId);
+      const series = await loadSeriesDetail(seriesId);
 
-      if (!series) {
-        content.innerHTML = `<div class="wrap"><div class="status-msg error">Không tìm thấy bộ truyện với ID "${escapeHtml(seriesId)}".</div></div>`;
+      if (!series || !series.title) {
+        content.innerHTML = `<div class="wrap"><div class="status-msg error">Không tìm thấy bộ truyện "${escapeHtml(seriesId)}".</div></div>`;
         return;
       }
 
-      const chapters = allChapters.filter(c => c.seriesId === seriesId);
+      const heroCover = series.volumes.find(v => v.cover)?.cover || "";
 
       content.innerHTML = `
         <div class="series-hero">
           <div class="book-cover">
-            <img src="${series.cover}" alt="Bìa truyện ${escapeHtml(series.title)}"
+            <img src="${heroCover}" alt="Bìa truyện ${escapeHtml(series.title)}"
                  onerror="this.src='https://placehold.co/400x600/1E1B27/C9C3B4?text=No+Cover'">
           </div>
           <div class="series-info">
             <h1>${escapeHtml(series.title)}</h1>
             <div class="series-tags">
-              ${series.status ? `<span class="tag status-${escapeHtml(series.status)}">${statusLabel(series.status)}</span>` : ""}
+              ${series.status ? `<span class="tag ${statusClass(series.status)}">${escapeHtml(statusLabel(series.status))}</span>` : ""}
               ${series.genre.map(g => `<span class="tag">${escapeHtml(g)}</span>`).join("")}
             </div>
-            <p class="series-desc">${escapeHtml(series.description) || "Chưa có mô tả cho bộ truyện này."}</p>
-            ${series.url ? `
-              <a class="origin-link" href="${series.url}" target="_blank" rel="noopener noreferrer">
-                Đọc tại trang gốc &nearr;
+            <p class="series-desc">${series.volumes.length} tập được theo dõi trên kệ.</p>
+            ${series.link ? `
+              <a class="origin-link" href="${series.link}" target="_blank" rel="noopener noreferrer">
+                Mua tại trang gốc &nearr;
               </a>` : ""}
           </div>
         </div>
 
         <div class="wrap chapters-section">
-          <h2>Danh sách chương (${chapters.length})</h2>
-          ${chapterGridHtml(chapters)}
+          <h2>Danh sách tập (${series.volumes.length})</h2>
+          ${volumeGridHtml(series.volumes)}
         </div>
       `;
     } catch (err) {
-      content.innerHTML = `<div class="wrap"><div class="status-msg error">Không lấy được dữ liệu. Kiểm tra lại config.js và đảm bảo sheet đã Publish to web.</div></div>`;
+      content.innerHTML = `<div class="wrap"><div class="status-msg error">Không lấy được dữ liệu. Kiểm tra lại config.js và đảm bảo Apps Script đã Deploy với quyền "Anyone".</div></div>`;
       console.error(err);
     }
   }
