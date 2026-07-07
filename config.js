@@ -15,8 +15,8 @@
 // https://docs.google.com/spreadsheets/d/e/2PACX-xxxxxxx/pub?gid=0&single=true&output=csv
 
 const CONFIG = {
-  SERIES_CSV_URL: "PASTE_YOUR_SERIES_SHEET_CSV_LINK_HERE",
-  CHAPTERS_CSV_URL: "PASTE_YOUR_CHAPTERS_SHEET_CSV_LINK_HERE",
+  SERIES_CSV_URL: "1EnWpN30yR_9RBV4kWTQrxFhLt_6CPnYXnLVJXR30k6Y",
+  CHAPTERS_CSV_URL: "1EnWpN30yR_9RBV4kWTQrxFhLt_6CPnYXnLVJXR30k6Y",
 
   // Tên site hiển thị trên trang
   SITE_TITLE: "夜読 Yodoku",
