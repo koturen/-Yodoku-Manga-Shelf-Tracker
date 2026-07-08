@@ -1,91 +1,84 @@
-# 夜読 Yodoku — Manga Shelf Tracker
+# Yodoku — Manga Tracker (v2, Flat / Light+Dark)
 
-Trang web tĩnh (deploy lên GitHub Pages) theo dõi nhiều bộ manga, mỗi bộ là **một tab riêng** trong Google Sheet của bạn. Dữ liệu lấy qua **Google Apps Script Web App** (không dùng CSV publish-to-web vì hay bị cache/lỗi với sheet nhiều tab).
+Bản redesign theo phong cách tracker/wiki phẳng (Flat Design), có **Light Mode / Dark Mode**, trang chi tiết bộ truyện gộp 3 phần (thông tin chính → bảng wiki → danh sách Vol.), grid 5 card/hàng, responsive Desktop/Tablet/Mobile.
 
-## Cấu trúc sheet của bạn (giữ nguyên, không cần đổi)
+## 1. Cấu trúc Google Sheet (mới)
 
-Mỗi tab = 1 bộ truyện. Trong mỗi tab:
-
-```
-A1: Tên bộ        B1: <tên bộ truyện>
-A2: Thể loại       B2: <thể loại, cách nhau dấu phẩy>
-A3: Tình trạng     B3: On-going / End
-A4: Tập | Trạng thái | Giá bìa | Giá sẵn | Ảnh bìa | Hình hiển thị
-A5: Tập 1 | Chưa xuất bản | ... | ... | <link ảnh> | =IMAGE(...)
-A6: Tập 2 | ...
-...
-```
-
-Script đọc theo **nhãn ở cột A**, không theo số dòng cố định — nên bạn có thể thêm dòng metadata mới bất cứ lúc nào (xem mục dưới) mà không sợ vỡ code.
-
-### Thêm link mua (khuyến nghị)
-
-Vì mỗi bộ truyện của bạn có thể mua ở một trang/site khác nhau, thêm 1 dòng metadata mới **trước dòng "Tập"** ở mỗi tab, ví dụ chèn ở A4 (đẩy bảng Tập xuống):
+Mỗi **tab** = 1 bộ truyện. Các dòng phía trên là **metadata**, đọc theo **từng cặp cột liền nhau** (cột lẻ = nhãn, cột kế bên = giá trị) — một dòng có thể chứa nhiều cặp nhãn/giá trị nằm cạnh nhau:
 
 ```
-A4: Link mua    B4: https://tiki.vn/...-cua-bo-nay
+A1:Tên bộ        B1:<...>   C1:Tựa phiên âm      D1:<...>   E1:Dịch giả              F1:<...>
+G1:Đối tượng độc giả  H1:<...>   I1:Nhà xuất bản 🇻🇳  J1:<...>   K1:Trạng thái xuất bản 🇻🇳 L1:<...>
+M1:Năm xuất bản 🇯🇵   N1:<...>   O1:Loại ấn phẩm       P1:<...>   Q1:Khổ giấy (rộng x cao)  R1:<...>
+
+A2:Thể loại      B2:<...>   C2:Tác giả           D2:<...>   E2:Tổng số tập           F2:<...>
+I2:Năm xuất bản 🇻🇳  J2:<...>   K2:Nhà xuất bản 🇯🇵    L2:<...>   M2:Trạng thái xuất bản 🇯🇵 N2:<...>
+O2:Định dạng bìa  P2:<...>   Q2:Loại bìa           R2:<...>
+
+A4:Tập  B4:Phụ đề  C4:Phụ đề JP  D4:Chương  E4:Ngày phát hành  F4:Giá bìa  G4:Ảnh bìa
+A5:1    ...
 ```
 
-Script sẽ tự nhận diện field `Link mua` (hoặc `Link`, `Trang bán`) và hiển thị nút "Mua tại trang gốc" ở trang chi tiết.
+Script quét từ trên xuống, đọc mọi cặp (nhãn, giá trị) trên mỗi dòng, cho tới khi gặp dòng có cột A = **"Tập"** — dòng đó là header bảng tập, các dòng dưới là dữ liệu từng tập (map theo tên cột, cột nào cũng được, thêm/bớt tuỳ ý).
 
-> Tab nào không có dòng "Link mua" thì trang chi tiết sẽ đơn giản là không hiện nút mua — không lỗi gì cả.
+**Muốn thêm trường mới** (vd "Tựa gốc", "Họa sĩ", "Tên tiếng Anh", "Phiên bản", "Ấn bản"...): chỉ cần thêm 1 cặp cột (nhãn/giá trị) vào bất kỳ dòng metadata nào — trang sẽ tự nhận và hiển thị trong bảng wiki, không cần sửa code. Các nhãn trang web đang nhận diện: xem danh sách trong `data.js` (hàm `buildWikiSections`).
 
-### Tab không muốn hiển thị
+**Link mua** (để hiện nút "Mua tại trang gốc"): thêm cặp `Link mua | <url>` ở bất kỳ đâu trong phần metadata.
 
-Sửa mảng `EXCLUDED_SHEETS` trong `Code.gs` (mặc định đã loại tab `"Example"`).
+## 2. Cài Apps Script
 
-## 1. Cài Apps Script
-
-1. Mở Google Sheet > **Tiện ích (Extensions) > Apps Script**.
-2. Xoá code mẫu, dán toàn bộ nội dung file `Code.gs` vào.
-3. Bấm **Deploy > New deployment**.
-4. Chọn loại **Web app**.
+1. Mở Sheet > **Extensions > Apps Script**.
+2. Dán toàn bộ `Code.gs` vào (thay code cũ nếu có), Save.
+3. **Deploy > New deployment** (hoặc nếu đã deploy trước: **Manage deployments** > sửa > **Version: New version**) > **Web app**.
    - Execute as: **Me**
    - Who has access: **Anyone**
-5. Bấm **Deploy**, cấp quyền khi được hỏi (Authorize access).
-6. Copy **Web app URL** (dạng kết thúc bằng `/exec`).
+4. Copy link `.../exec`, dán vào `config.js` → `APPS_SCRIPT_URL`.
 
-> Mỗi lần bạn sửa `Code.gs` sau này, phải vào **Deploy > Manage deployments** > bấm sửa (icon bút chì) > **Version: New version** > Deploy lại thì thay đổi mới có hiệu lực trên web.
+Kiểm tra nhanh: mở `<link>?action=series` trên trình duyệt phải thấy JSON.
 
-## 2. Cấu hình trang web
+## 3. Tuỳ chỉnh logo & theme mặc định
 
-Mở `config.js`, dán link Web App vào:
+Trong `config.js`:
 
 ```js
-const CONFIG = {
-  APPS_SCRIPT_URL: "https://script.google.com/macros/s/xxxxx/exec",
-  SITE_TITLE: "夜読 Yodoku",
-  SITE_TAGLINE: "...",
-  VOLUMES_PER_ROW: 5,
-};
+LOGO_TEXT: "Yodoku",              // logo dạng chữ
+LOGO_IMAGE_URL: "",               // dán link ảnh logo nếu muốn dùng ảnh thay vì chữ
+SITE_TAGLINE: "...",
+DEFAULT_THEME: "light",           // "light" hoặc "dark"
 ```
 
-Kiểm tra nhanh: mở link `APPS_SCRIPT_URL + "?action=series"` thẳng trên trình duyệt, phải thấy JSON danh sách bộ truyện. Nếu lỗi 403/401, kiểm tra lại bước "Who has access: Anyone".
+Người dùng có thể tự đổi Light/Dark bằng nút mặt trời/mặt trăng ở góc phải header — lựa chọn được lưu lại (khi trang được host thật trên GitHub Pages; bản xem trước trong khung chat của Claude có thể không lưu do giới hạn của môi trường xem trước).
 
-## 3. Đưa lên GitHub Pages
+## 4. Đưa lên GitHub Pages
 
 ```bash
-git init
 git add .
-git commit -m "Manga shelf tracker (Apps Script backend)"
-git branch -M main
-git remote add origin https://github.com/<ten-ban>/<ten-repo>.git
-git push -u origin main
+git commit -m "Redesign v2: flat light/dark, wiki table, volume grid"
+git push
 ```
 
-Repo trên GitHub > **Settings > Pages > Source: branch `main`, thư mục `/ (root)`** > Save.
+Repo > **Settings > Pages > Source: branch `main`, `/ (root)`**.
 
-## 4. Cập nhật truyện sau này
-
-Chỉ cần sửa trực tiếp trong Google Sheet (thêm tab mới = thêm bộ truyện mới, thêm dòng = thêm tập mới) — **không cần deploy lại Apps Script**, chỉ deploy lại khi bạn sửa code `Code.gs`. Trang web luôn lấy dữ liệu mới nhất mỗi lần tải lại (không cache như CSV publish).
-
-## Cấu trúc file
+## 5. Cấu trúc file
 
 ```
-index.html   → Trang chủ: kệ sách các bộ truyện, tìm kiếm, lọc thể loại
-series.html  → Trang chi tiết: ảnh bìa từng tập cỡ lớn, 5 tập/hàng, giá, trạng thái
-style.css    → Giao diện "kệ sách ban đêm"
-config.js    → Nơi dán link Apps Script Web App
-data.js      → Gọi API, chuẩn hoá dữ liệu
-Code.gs      → Backend Apps Script, dán vào Google Sheet của bạn
+index.html    → Trang chủ: grid series 5/hàng, tìm kiếm, lọc trạng thái có màu, toggle theme
+series.html   → Trang chi tiết: hero 2 cột + bảng wiki 3 nhóm + danh sách Vol. 5/3/2 responsive
+style.css     → Design system Light/Dark, flat 12px radius
+config.js     → Logo, tagline, theme mặc định, link Apps Script
+theme.js      → Xử lý chuyển Light/Dark, lưu lựa chọn
+data.js       → Gọi API, chuẩn hoá dữ liệu, xây bảng wiki tự động theo nhãn có trong sheet
+Code.gs       → Backend Apps Script, đọc sheet theo cặp cột (nhãn, giá trị)
 ```
+
+## Ghi chú về màu trạng thái
+
+| Trạng thái | Màu |
+|---|---|
+| Đang xuất bản | Xanh lá |
+| Hoàn thành | Xanh dương |
+| Tạm dừng | Cam |
+| Tạm ngưng | Đỏ |
+| Công bố bản quyền | Tím |
+
+Trang chủ lọc theo field **Trạng thái xuất bản 🇻🇳**. Đổi màu/label thì sửa `STATUS_MAP` trong `data.js`.
