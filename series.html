@@ -116,7 +116,6 @@
 
       const m = series.meta;
       const heroCover = (series.volumes.find(v => v.cover) || {}).cover || "";
-      const lastVolNum = series.volumes.length ? series.volumes[series.volumes.length - 1].number : "";
 
       const altTitlesHtml = [
         m["Tựa gốc"] ? `<div class="alt-jp">${escapeHtml(m["Tựa gốc"])}</div>` : "",
@@ -145,7 +144,6 @@
               <img src="${heroCover}" alt="Bìa ${escapeHtml(series.title)}"
                    onerror="this.src='https://placehold.co/400x600/e7e5dd/6e6d66?text=No+Cover'">
             </div>
-            ${lastVolNum ? `<div class="hero-cover-caption">Bìa tập mới nhất</div>` : ""}
             <div class="hero-tags">
               ${series.demographic ? `<span class="tag demographic">${escapeHtml(series.demographic)}</span>` : ""}
               ${series.genre.map(g => `<span class="tag">${escapeHtml(g)}</span>`).join("")}
