@@ -58,6 +58,7 @@ async function loadSeriesDetail(seriesId) {
   const volumes = (r.volumes || []).map(v => ({
     number: v["Tập"] || "",
     subtitle: v["Phụ đề"] || v["Phụ đề tập"] || "",
+    subtitleRomaji: v["Phụ đề phiên âm"] || "",
     subtitleJP: v["Phụ đề JP"] || v["Phụ đề tập tiếng Nhật"] || "",
     chapterRange: v["Chương"] || v["Chương truyện"] || "",
     releaseDate: v["Ngày phát hành"] || v["Ngày xuất bản"] || "",
