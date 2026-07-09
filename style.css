@@ -1,6 +1,6 @@
 /* ============================================================
    Yodoku — Flat Tracker design system (Light / Dark)
-   Display font: Sora (700/800)   Body font: Inter
+   Display font: Alfa Slab One   Body font: Inter
    Flat design, 12px radius, soft shadows
    ============================================================ */
 
@@ -9,7 +9,7 @@
 :root {
   --radius: 12px;
   --radius-sm: 8px;
-  --font-display: "Sora", sans-serif;
+  --font-display: "Alfa Slab One", sans-serif;
   --font-body: "Inter", sans-serif;
 
   --status-ongoing: #2F9E44;
