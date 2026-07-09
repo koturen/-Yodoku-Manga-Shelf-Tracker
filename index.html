@@ -135,7 +135,6 @@
     renderFilters();
     try {
       ALL_SERIES = await loadSeriesList();
-      ALL_SERIES.sort((a, b) => a.title.localeCompare(b.title, "vi", { sensitivity: "base" }));
       if (ALL_SERIES.length === 0) {
         shelf.innerHTML = `<div class="status-msg">Chưa có bộ truyện nào. Thêm tab mới trong Google Sheet và tải lại trang.</div>`;
         return;
