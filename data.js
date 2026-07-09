@@ -30,6 +30,14 @@ function resolveStatus(raw) {
   return found ? found : { label: raw || "", cls: "status-default" };
 }
 
+/** Thêm ký hiệu ₫ vào giá tiền nếu chưa có sẵn (₫ hoặc đ/VND). */
+function formatPrice(raw) {
+  const v = (raw || "").toString().trim();
+  if (!v) return "";
+  if (/[₫đ]|vnd/i.test(v)) return v;
+  return `${v} ₫`;
+}
+
 const ALL_FILTERS = STATUS_MAP.map(s => ({ label: s.label, cls: s.cls }));
 
 /** Danh sách bộ truyện cho trang chủ */
@@ -126,7 +134,7 @@ function buildWikiSections(meta, volumes) {
         ["Định dạng bìa", meta["Định dạng bìa"]],
         ["Loại bìa", meta["Loại bìa"]],
         ["Khổ giấy (rộng x cao)", meta["Khổ giấy (rộng x cao)"]],
-        ["Giá bìa", meta["Giá bìa"] || (firstVol && firstVol.price) || ""],
+        ["Giá bìa", formatPrice(meta["Giá bìa"] || (firstVol && firstVol.price) || "")],
       ],
     },
   ];

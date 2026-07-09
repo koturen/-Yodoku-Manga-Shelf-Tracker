@@ -76,7 +76,7 @@
         </div>
         <div class="vol-footer">
           <span class="vol-date">${escapeHtml(v.releaseDate)}</span>
-          <span class="vol-price">${escapeHtml(v.price)}</span>
+          <span class="vol-price">${escapeHtml(formatPrice(v.price))}</span>
         </div>
       </div>
     `;
@@ -131,7 +131,7 @@
         ["Nhà xuất bản", m["Nhà xuất bản 🇻🇳"]],
         ["Năm xuất bản", m["Năm xuất bản 🇻🇳"]],
         ["Số tập", m["Tổng số tập"] || String(series.volumes.length)],
-        ["Giá bìa", m["Giá bìa"] || (series.volumes[0] && series.volumes[0].price) || ""],
+        ["Giá bìa", formatPrice(m["Giá bìa"] || (series.volumes[0] && series.volumes[0].price) || "")],
       ].filter(([, v]) => v && String(v).trim());
 
       const wikiSections = buildWikiSections(m, series.volumes);
