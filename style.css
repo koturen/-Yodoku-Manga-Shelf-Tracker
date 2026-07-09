@@ -1,15 +1,15 @@
 /* ============================================================
    Yodoku — Flat Tracker design system (Light / Dark)
-   Display font: Alfa Slab One   Body font: Inter
+   Display font: Josefin Sans (700/800)   Body font: Inter
    Flat design, 12px radius, soft shadows
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Alfa+Slab+One&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@600;700&family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
   --radius: 12px;
   --radius-sm: 8px;
-  --font-display: "Alfa Slab One", sans-serif;
+  --font-display: "Josefin Sans", sans-serif;
   --font-body: "Inter", sans-serif;
 
   --status-ongoing: #2F9E44;
@@ -92,7 +92,7 @@ header.top {
   align-items: center;
   gap: 10px;
   font-family: var(--font-display);
-  font-weight: 800;
+  font-weight: 700;
   font-size: 1.3rem;
   color: var(--text);
   flex-shrink: 0;
@@ -391,7 +391,7 @@ footer.site-footer {
 
 .hero-title {
   font-family: var(--font-display);
-  font-weight: 800;
+  font-weight: 700;
   font-size: clamp(1.8rem, 4vw, 2.6rem);
   line-height: 1.15;
   margin: 0;
